@@ -71,13 +71,13 @@ const result = await agentExecutor.invoke({
 console.log(`${result.input}\n` + `${result.output} \n`);
 
 const result1 = await agentExecutor.invoke({
-  input: "List tickers from ETH-BRL",
+  input: "List tickers from BTC-BRL",
 });
 
 console.log(`${result1.input}\n` + `${result1.output}\n`);
 
 const result2 = await agentExecutor.invoke({
-  input: "Qual a taxa de saque do Sol?",
+  input: "Qual a taxa de saque do BTC?",
 });
 
 console.log(`${result2.input}\n` + `${result2.output}\n`);
