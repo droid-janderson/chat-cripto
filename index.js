@@ -1,3 +1,4 @@
+import express from "express";
 import { ChatOpenAI } from "@langchain/openai";
 import {
   ChatPromptTemplate,
@@ -6,9 +7,14 @@ import {
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
 import { AgentExecutor, createOpenAIFunctionsAgent } from "langchain/agents";
-// import { BufferMemory } from "langchain/memory";
+import { BufferMemory } from "langchain/memory";
 import { config } from "dotenv";
-import listNetworks from "./tools/tools.js";
+import getFeesFromAsset from "./tools/getFeesFromAsset.js";
+import listNetworks from "./tools/listNetworksTool.js";
+import listTickers from "./tools/listTickersTool.js";
+
+const app = express();
+app.use(express.json());
 
 config();
 
@@ -30,12 +36,21 @@ const prompt = ChatPromptTemplate.fromMessages([
   SystemMessagePromptTemplate.fromTemplate(
     "Quando houver mais de uma resposta, faça uma lista organizas de forma numerica. Todos as respostas devem ser terminadas em ';', exceto a última da lista que dev ser finalizada com ponto final."
   ),
-  // new MessagesPlaceholder("chat_history"),
+  SystemMessagePromptTemplate.fromTemplate(
+    "Sempre que houver uma chamada na Tool listTickers, sempre use a função UPPER antes de enviar o paramentro da função."
+  ),
+  new MessagesPlaceholder("chat_history"),
   HumanMessagePromptTemplate.fromTemplate("{input}"),
   new MessagesPlaceholder({ variableName: "agent_scratchpad" }),
 ]);
 
-const tools = [listNetworks];
+const memory = new BufferMemory({
+  memoryKey: "chat_history",
+  returnMessages: true,
+  outputKey: "output",
+});
+
+const tools = [listNetworks, listTickers, getFeesFromAsset];
 
 const agent = await createOpenAIFunctionsAgent({
   llm: chat,
@@ -47,14 +62,42 @@ const agentExecutor = new AgentExecutor({
   agent,
   // verbose: true,
   tools,
+  memory,
 });
 
-const result1 = await agentExecutor.invoke({
-  // input: "what is the network from matic?",
-  input: "what is the network from shib, btc, sol, xlm and xrp?",
-  // input: "what is the network from sol?",
-  // input: "what is the network from xlm?",
-  // input: "what is the network from pepe?",
-  // input: "liste todos os networks e cada uma das sua criptos",
+const result = await agentExecutor.invoke({
+  input: "what is the network from shib, btc, xlm and xrp?",
 });
-console.log(`${result1.input}\n` + `${result1.output} \n`);
+console.log(`${result.input}\n` + `${result.output} \n`);
+
+const result1 = await agentExecutor.invoke({
+  input: "List tickers from ETH-BRL",
+});
+
+console.log(`${result1.input}\n` + `${result1.output}\n`);
+
+const result2 = await agentExecutor.invoke({
+  input: "Qual a taxa de saque do Sol?",
+});
+
+console.log(`${result2.input}\n` + `${result2.output}\n`);
+
+app.get("/", (req, res) => {
+  return res.json({
+    message: "Bem vindo Dev!",
+  });
+});
+
+app.post("/chat", async (req, res) => {
+  const { input } = req.body;
+
+  const result = await agentExecutor.invoke({
+    input,
+  });
+
+  res.json(result);
+});
+
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});
