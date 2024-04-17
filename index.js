@@ -51,7 +51,7 @@ const agentExecutor = new AgentExecutor({
 
 const result1 = await agentExecutor.invoke({
   // input: "what is the network from matic?",
-  input: "what is the network from shib, btc and xrp?",
+  input: "what is the network from shib, btc, sol, xlm and xrp?",
   // input: "what is the network from sol?",
   // input: "what is the network from xlm?",
   // input: "what is the network from pepe?",
