@@ -6,7 +6,7 @@ const listTickers = new DynamicStructuredTool({
   name: "listTickers",
   description: "List Tickers From Symbol",
   schema: z.object({
-    symbols: z.string(),
+    symbols: z.string().describe("Symbol to list tickers from (e.g. BTC-BRL)"),
   }),
   func: async ({ symbols }) => {
     try {
