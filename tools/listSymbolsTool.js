@@ -2,7 +2,7 @@ import { z } from "zod";
 import api from "../services/api.js";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 
-const listTickers = new DynamicStructuredTool({
+const listSymbols = new DynamicStructuredTool({
   name: "listSymbols",
   description: "List all Symbols",
   schema: z.object({
@@ -12,16 +12,20 @@ const listTickers = new DynamicStructuredTool({
     try {
       const response = await api.get("/symbols");
       // console.log(response.data);
-      const symbolResponse = response.data.find(
-        (item) => item.toLowerCase() === symbol.toLowerCase()
-      );
+      // const symbolResponse = response.data.symbol.find(
+      //   (item) => item.toLowerCase() === symbol.toLowerCase()
+      // );
 
-      return JSON.stringify(symbolResponse);
+      // console.log(symbolResponse);
+      return JSON.stringify(response.data.symbol);
     } catch (error) {
       console.log("Error", error);
       return Error`fetching data: ${error}`;
     }
   },
+  required: {
+    symbol: false,
+  },
 });
 
-export default listTickers;
+export default listSymbols;

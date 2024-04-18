@@ -9,9 +9,12 @@ import {
 import { AgentExecutor, createOpenAIFunctionsAgent } from "langchain/agents";
 import { BufferMemory } from "langchain/memory";
 import { config } from "dotenv";
-import getFeesFromAsset from "./tools/getFeesFromAsset.js";
+import getFeesFromAsset from "./tools/getFeesFromAssetTool.js";
+import getOrderBook from "./tools/getOrderBookTool.js";
 import listNetworks from "./tools/listNetworksTool.js";
+import listSymbols from "./tools/listSymbolsTool.js";
 import listTickers from "./tools/listTickersTool.js";
+import listTrades from "./tools/listTradesTool.js";
 
 const app = express();
 app.use(express.json());
@@ -37,7 +40,7 @@ const prompt = ChatPromptTemplate.fromMessages([
     "Quando houver mais de uma resposta, faça uma lista organizas de forma numerica. Todos as respostas devem ser terminadas em ';', exceto a última da lista que dev ser finalizada com ponto final."
   ),
   SystemMessagePromptTemplate.fromTemplate(
-    "Sempre que houver uma chamada na Tool listTickers, sempre use a função UPPER antes de enviar o paramentro da função."
+    "Sempre use a função listSymbols para listar todos os símbolos disponíveis."
   ),
   new MessagesPlaceholder("chat_history"),
   HumanMessagePromptTemplate.fromTemplate("{input}"),
@@ -50,7 +53,14 @@ const memory = new BufferMemory({
   outputKey: "output",
 });
 
-const tools = [listNetworks, listTickers, getFeesFromAsset];
+const tools = [
+  getFeesFromAsset,
+  getOrderBook,
+  listNetworks,
+  listSymbols,
+  listTickers,
+  listTrades,
+];
 
 const agent = await createOpenAIFunctionsAgent({
   llm: chat,
@@ -65,22 +75,40 @@ const agentExecutor = new AgentExecutor({
   memory,
 });
 
-const result = await agentExecutor.invoke({
-  input: "what is the network from shib, btc, xlm and xrp?",
+// const result = await agentExecutor.invoke({
+//   input: "what is the network from shib?",
+// });
+// console.log(`${result.input}\n` + `${result.output} \n`);
+
+// const result1 = await agentExecutor.invoke({
+//   input: "List tickers from eth-brl.",
+// });
+
+// console.log(`${result1.input}\n` + `${result1.output}\n`);
+
+// const result2 = await agentExecutor.invoke({
+//   input: "Qual o último preço do eth-brl?",
+// });
+
+// console.log(`${result2.input}\n` + `${result2.output}\n`);
+
+// const result3 = await agentExecutor.invoke({
+//   input: "List alguns dos symbols disponíveis.",
+// });
+
+// console.log(`${result3.input}\n` + `${result3.output}\n`);
+
+// const result4 = await agentExecutor.invoke({
+//   input: "List orderbook from eth-brl.",
+// });
+
+// console.log(`${result4.input}\n` + `${result4.output}\n`);
+
+const result5 = await agentExecutor.invoke({
+  input: "List trades from eth-brl.",
 });
-console.log(`${result.input}\n` + `${result.output} \n`);
 
-const result1 = await agentExecutor.invoke({
-  input: "List tickers from BTC-BRL",
-});
-
-console.log(`${result1.input}\n` + `${result1.output}\n`);
-
-const result2 = await agentExecutor.invoke({
-  input: "Qual a taxa de saque do BTC?",
-});
-
-console.log(`${result2.input}\n` + `${result2.output}\n`);
+console.log(`${result5.input}\n` + `${result5.output}\n`);
 
 app.get("/", (req, res) => {
   return res.json({
