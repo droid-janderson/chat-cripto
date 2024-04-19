@@ -23,9 +23,6 @@ const listSymbols = new DynamicStructuredTool({
       return Error`fetching data: ${error}`;
     }
   },
-  required: {
-    symbol: false,
-  },
 });
 
 export default listSymbols;

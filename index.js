@@ -15,6 +15,7 @@ import listNetworks from "./tools/listNetworksTool.js";
 import listSymbols from "./tools/listSymbolsTool.js";
 import listTickers from "./tools/listTickersTool.js";
 import listTrades from "./tools/listTradesTool.js";
+import getSymbol from "./tools/getSymbolTool.js";
 
 const app = express();
 app.use(express.json());
@@ -42,6 +43,9 @@ const prompt = ChatPromptTemplate.fromMessages([
   SystemMessagePromptTemplate.fromTemplate(
     "Sempre use a função listSymbols para listar todos os símbolos disponíveis."
   ),
+  SystemMessagePromptTemplate.fromTemplate(
+    "Quando precisar da sigla do asset, usa a tool 'getSymbolTool'"
+  ),
   new MessagesPlaceholder("chat_history"),
   HumanMessagePromptTemplate.fromTemplate("{input}"),
   new MessagesPlaceholder({ variableName: "agent_scratchpad" }),
@@ -60,6 +64,7 @@ const tools = [
   listSymbols,
   listTickers,
   listTrades,
+  getSymbol,
 ];
 
 const agent = await createOpenAIFunctionsAgent({
@@ -105,7 +110,7 @@ const agentExecutor = new AgentExecutor({
 // console.log(`${result4.input}\n` + `${result4.output}\n`);
 
 const result5 = await agentExecutor.invoke({
-  input: "List trades from eth-brl.",
+  input: "List trades from etheriun brasil.",
 });
 
 console.log(`${result5.input}\n` + `${result5.output}\n`);
